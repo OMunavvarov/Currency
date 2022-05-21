@@ -19,8 +19,8 @@ class _HomePageState extends State<HomePage> {
   MainViewModel? _mainVM;
   void initState() {
     // TODO: implement initState
+ //  _mainVM=Provider.of<MainViewModel>(context,listen: false);  Buni bu yerda chaqirishingiz shart emas sababi providerdan to'g'ridan to'g Listni chaqirsangiz bo'ladi;
     super.initState();
-    _mainVM=Provider.of<MainViewModel>(context,listen: false);
   }
 
   @override
@@ -34,14 +34,14 @@ class _HomePageState extends State<HomePage> {
       ),
       body:  Container(
         child: FutureBuilder(
-          future: _mainVM?.getCurrencyRate(),
-          builder: (BuildContext context,AsyncSnapshot<ApiResponse> snapshot){
-            if(snapshot.data?.status==Status.LOADING){
+          future: Provider.of<MainViewModel>(context).currencies(),//_mainVM?.getCurrencyRate(),
+          builder: (BuildContext context,AsyncSnapshot<List<CurrencyRate>> snapshot){
+            if(!snapshot.hasData ){
               return const Center(child: CircularProgressIndicator(),);
             }
-            if(snapshot.data?.status==Status.SUCCESS){
+            if(snapshot.hasData){
               return   ListView.builder(
-                  itemCount: snapshot.data?.data.length,
+                  itemCount: snapshot.data?.length,
                   itemBuilder: (BuildContext context,int index){
                     return SizedBox(
                       height: 50,
@@ -49,12 +49,12 @@ class _HomePageState extends State<HomePage> {
                           child:Row(
                             children: [
                               Text(
-                                snapshot.data?.data[index].title ?? "...",
+                                snapshot.data![index].title ?? "...", // bu yerda sizda data.data bo'p qolipti  snapshot.data list bo'lganligi uchun birdaniga indexi bilan chaqirdim
                                 style: const TextStyle(fontSize: 18),
                               ),
                               const SizedBox(width: 40,),
                               Text(
-                                snapshot.data?.data[index].cb_price ?? "...",
+                                snapshot.data![index].cb_price ?? "...",
                                 style: const TextStyle(fontSize: 18),
                               ),
                             ],
@@ -65,14 +65,11 @@ class _HomePageState extends State<HomePage> {
                   }
               );
             }
-            if(snapshot.data?.status==Status.ERROR){
-              return buildError(snapshot.data?.message);
+            if(snapshot.hasError){
+              return buildError("Server bilan bog'lanishda muammo yuzaga keldi");
 
             }
-            if(snapshot.data?.status==Status.INITIAL){
-              return Center(child: Text(snapshot.data?.message ?? "Initial",
-              style: TextStyle(fontSize: 24),),);
-            }
+
             return Container();
 
           },

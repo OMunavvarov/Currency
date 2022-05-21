@@ -16,8 +16,11 @@ class MainViewModel extends ChangeNotifier{
     return _apiResponse;
   }
 
-  List<CurrencyRate> get currencies{
+  Future<List<CurrencyRate>>  currencies() async{
+    // bu yerda getni  o'rniga  async funksiya qo'shdim sababi apidan kelyotgan malumotlarni  await qib turishi uchun
+    await getCurrencyRate();
     return _currencyList;
+
   }
   Future<ApiResponse> getCurrencyRate() async{
     String url="https://nbu.uz/uz/exchange-rates/json/";
