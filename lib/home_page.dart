@@ -19,8 +19,8 @@ class _HomePageState extends State<HomePage> {
   MainViewModel? _mainVM;
   void initState() {
     // TODO: implement initState
+    //  _mainVM=Provider.of<MainViewModel>(context,listen: false);  Buni bu yerda chaqirishingiz shart emas sababi providerdan to'g'ridan to'g Listni chaqirsangiz bo'ladi;
     super.initState();
-    _mainVM=Provider.of<MainViewModel>(context,listen: false);
   }
 
   @override
@@ -33,70 +33,97 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body:  Container(
-        child: FutureBuilder(
-          future: _mainVM?.getCurrencyRate(),
-          builder: (BuildContext context,AsyncSnapshot<ApiResponse> snapshot){
-            if(snapshot.data?.status==Status.LOADING){
-              return const Center(child: CircularProgressIndicator(),);
-            }
-            if(snapshot.data?.status==Status.SUCCESS){
-              return   ListView.builder(
-                  itemCount: snapshot.data?.data.length,
-                  itemBuilder: (BuildContext context,int index){
-                    return SizedBox(
-                      height: 50,
-                      child: Card(
-                          child:Row(
-                            children: [
-                              Text(
-                                snapshot.data?.data[index].title ?? "...",
-                                style: const TextStyle(fontSize: 18),
+          child: FutureBuilder(
+            future: Provider.of<MainViewModel>(context).currencies,//_mainVM?.getCurrencyRate(),
+            builder: (BuildContext context,AsyncSnapshot<List<CurrencyRate>> snapshot){
+              if(!snapshot.hasData ){
+                return const Center(child: CircularProgressIndicator(),);
+              }
+              if(snapshot.hasData){
+                return   ListView.builder(
+                    itemCount: snapshot.data?.length,
+                    itemBuilder: (BuildContext context,int index){
+                      return SizedBox(
+                        height: 120,
+                        child: Card(
+                            child:Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    snapshot.data![index].code ?? "...",
+                                    style: const TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 14,),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Mb kursi',
+                                        style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),
+                                      ),
+                                      const SizedBox(width: 48,),
+                                      const Text(
+                                        'Sotib olish',
+                                        style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),
+                                      ),
+                                      const SizedBox(width: 46,),
+                                      Text(
+                                        'Sotish',
+                                        style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10,),
+                                  Row(
+                                    children: [
+                                      Text( snapshot.data![index].cb_price ?? "...",
+                                        style: const TextStyle(fontSize: 18),),
+                                      const SizedBox(width: 40,),
+                                      Text( snapshot.data![index].buy_price ?? "...",
+                                        style: const TextStyle(fontSize: 18),),
+                                      const SizedBox(width: 40,),
+                                      Text( snapshot.data![index].cell_price ?? "...",
+                                        style: const TextStyle(fontSize: 18),)
+                                    ],
+                                  )
+                                ],
                               ),
-                              const SizedBox(width: 40,),
-                              Text(
-                                snapshot.data?.data[index].cb_price ?? "...",
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          )
+                            )
 
-                      ),
-                    );
-                  }
-              );
-            }
-            if(snapshot.data?.status==Status.ERROR){
-              return buildError(snapshot.data?.message);
+                        ),
+                      );
+                    }
+                );
+              }
+              if(snapshot.hasError){
+                return buildError("Server bilan bog'lanishda muammo yuzaga keldi");
+              }
 
-            }
-            if(snapshot.data?.status==Status.INITIAL){
-              return Center(child: Text(snapshot.data?.message ?? "Initial",
-              style: TextStyle(fontSize: 24),),);
-            }
-            return Container();
+              return Container();
 
-          },
-        )
+            },
+          )
       ),
     );
   }
   Widget buildError(String? errorM){
     return Center(child:Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-    Text(errorM ?? "Error",
-    style: TextStyle(fontSize: 24),),
-    buildRefresh()
-    ]));
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(errorM ?? "Error",
+            style: TextStyle(fontSize: 24),),
+          buildRefresh()
+        ]));
 
-}
-Widget buildRefresh(){
+  }
+  Widget buildRefresh(){
     return  IconButton(onPressed: (){
       setState(() {
         _mainVM?.getCurrencyRate();
       });
     },
       icon: Icon(Icons.replay),iconSize: 30,);
-}
+  }
 }

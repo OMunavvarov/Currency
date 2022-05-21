@@ -16,7 +16,8 @@ class MainViewModel extends ChangeNotifier{
     return _apiResponse;
   }
 
-  List<CurrencyRate> get currencies{
+  Future<List<CurrencyRate>> get currencies async{
+    await getCurrencyRate();
     return _currencyList;
   }
   Future<ApiResponse> getCurrencyRate() async{
